@@ -1,0 +1,3 @@
+{"query_id": "Q001", "query_text": "a football player wearing red jersey number 9 celebrating a goal", "ground_truth": {"video_id": "L01_V001", "frame_id": "0023"}}
+{"query_id": "Q002", "query_text": "referee holding a yellow card in front of players", "ground_truth": {"video_id": "L01_V001", "frame_id": "0145"}}
+{"query_id": "Q003", "query_text": "close up shot of a soccer ball crossing the white goal line", "ground_truth": {"video_id": "L01_V002", "frame_id": "0890"}}

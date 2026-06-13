@@ -1,0 +1,22 @@
+# ─── PYTHON / BACKEND RÁC ───
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ─── NODE / FRONTEND RÁC ───
+frontend/node_modules/
+frontend/dist/
+.eslintcache
+
+# ─── DATA & LARGE FILES (CẤM ĐẨY LÊN GITHUB) ───
+data/processed/
+data/raw/
+.cache/
+data/logs/*.jsonl
+
+# ─── OS / IDE RÁC ───
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
