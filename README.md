@@ -1,8 +1,4 @@
-# 📄 Tài liệu Hướng dẫn Cài đặt & Sử dụng `README.md`
 
-Bản hãy tạo file `README.md` và dán toàn bộ nội dung thực chiến dưới đây vào:
-
-```markdown
 # ⚡ THUNDERRETRIEVE v1.0 — AI Challenge 2026 Video Retrieval Panel
 
 > **Giai đoạn 0 (P0):** Xây dựng hạ tầng đường ống dữ liệu Đa phương thức (End-to-End Baseline Pipeline) kết nối Giao diện React UI, Máy chủ FastAPI, và Cơ sở dữ liệu Vector trực tuyến Qdrant Cloud.
@@ -127,13 +123,5 @@ D:\AIC\
 │   │   └── submission_dry_run.jsonl  # Nhật ký ghi vết lịch sử nộp bài giải đề
 │   └── processed/           # Kho chứa ảnh frames, thumbs mẫu của video
 └── requirements.txt         # File đóng gói phiên bản thư viện Backend
-
-```
-
-```
-
----
-
-Bản tạo tệp tin này xong là coi như đồ án của nhóm bạn đã đạt độ hoàn thiện cực kỳ chỉn chu, sạch sẽ từ mã nguồn cho đến tài liệu hướng dẫn. Chúc Bản gánh team thành công rực rỡ trong đợt công bố đề thi thật vào ngày 25/06 sắp tới nhé!
 
 ```
