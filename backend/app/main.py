@@ -1,4 +1,7 @@
 import os
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 os.environ["HF_HOME"] = r"D:\AIC\.cache\huggingface"
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,6 +45,14 @@ def health_check():
 def do_search(request: SearchRequest):
     return search_service.execute_textual_search(query_text=request.query, top_k=request.top_k)
 
+@app.post("/api/v1/search/qa")
+def do_qa_search(request: SearchRequest):
+    return search_service.execute_qa_search(query_text=request.query, top_k=request.top_k)
+
+@app.post("/api/v1/search/trake")
+def do_trake_search(request: SearchRequest):
+    return search_service.execute_trake_search(query_text=request.query, top_k=request.top_k)
+
 @app.get("/api/v1/frame/neighbors")
 def get_neighbors(
     video_id: str = Query(..., description="Tên/ID của video"), 
@@ -75,10 +86,18 @@ def submit_dry_run(request: SubmitDryRunRequest):
     print(f"💾 [Log Submit] Đã lưu vết câu {request.query_id} -> Video: {request.video_id}, Frame: {request.frame_id}")
     return {"status": "success", "message": "Dry-run submission logged successfully", "data": log_entry}
 
+from starlette.responses import Response
+
+class CachedStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
 # --- MEDIA SERVING ---
 DATA_PROCESSED_DIR = r"D:\AIC\data\processed"
 if os.path.exists(DATA_PROCESSED_DIR):
-    app.mount("/media", StaticFiles(directory=DATA_PROCESSED_DIR), name="media")
-    print(f"📁 [Media Serving] Đã kích hoạt mỏ ảnh tĩnh tại: {DATA_PROCESSED_DIR}")
+    app.mount("/media", CachedStaticFiles(directory=DATA_PROCESSED_DIR), name="media")
+    print(f"📁 [Media Serving] Đã kích hoạt mỏ ảnh tĩnh (có Caching) tại: {DATA_PROCESSED_DIR}")
 else:
     print("⚠️ [Cảnh báo] Chưa tìm thấy thư mục data/processed để serve ảnh!")

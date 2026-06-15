@@ -2,6 +2,9 @@ import json
 import requests
 import time
 import os
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 
 API_SEARCH_URL = "http://127.0.0.1:8000/api/v1/search"
 EVAL_SET_PATH = r"D:\AIC\eval\eval_set.jsonl"

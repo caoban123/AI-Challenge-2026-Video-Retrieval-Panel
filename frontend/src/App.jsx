@@ -21,13 +21,26 @@ export default function App() {
   const [startTime, setStartTime] = useState(Date.now());
   const searchInputRef = useRef(null);
 
+  const [searchMode, setSearchMode] = useState('visual'); // 'visual', 'qa', 'trake'
+  const [apiAnswer, setApiAnswer] = useState('');
+  const [trajectory, setTrajectory] = useState([]);
+
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
     if (!query.trim()) return;
 
     setLoading(true);
+    setApiAnswer('');
+    setTrajectory([]);
     try {
-      const res = await axios.post(`${API_BASE}/api/v1/search`, {
+      let endpoint = `${API_BASE}/api/v1/search`;
+      if (searchMode === 'qa') {
+        endpoint = `${API_BASE}/api/v1/search/qa`;
+      } else if (searchMode === 'trake') {
+        endpoint = `${API_BASE}/api/v1/search/trake`;
+      }
+
+      const res = await axios.post(endpoint, {
         query: query,
         top_k: parseInt(topK)
       });
@@ -35,6 +48,13 @@ export default function App() {
       setResults(data);
       setTookMs(res.data.took_ms || 0);
       setStartTime(Date.now());
+      
+      if (res.data.answer) {
+        setApiAnswer(res.data.answer);
+      }
+      if (res.data.trajectory) {
+        setTrajectory(res.data.trajectory);
+      }
       
       if (data.length > 0) {
         handleSelectCandidate(data[0], 0);
@@ -158,7 +178,7 @@ export default function App() {
                 }`}
               >
                 <div className="relative aspect-video bg-slate-900">
-                  <img src={`${API_BASE}${item.thumb_url}`} alt="" className="h-full w-full object-cover" />
+                  <img src={`${API_BASE}${item.thumb_url}`} alt="" loading="lazy" className="h-full w-full object-cover" />
                   <span className="absolute top-1 left-1 bg-slate-950/90 text-[9px] font-mono px-1.5 py-0.5 rounded border border-slate-800 text-slate-400">#{item.rank}</span>
                   <span className="absolute bottom-1 right-1 bg-slate-950/90 text-[9px] font-mono px-1.5 py-0.5 rounded border border-slate-800 text-amber-400 font-bold">{item.timestamp}s</span>
                 </div>
@@ -249,6 +269,38 @@ export default function App() {
         <aside className="w-60 border-r border-slate-800/40 bg-slate-900/10 backdrop-blur-md p-4 flex flex-col gap-5 shrink-0">
           <div>
             <div className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-slate-400" /> SEARCH MODE
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={() => setSearchMode('visual')}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all duration-300 ${
+                  searchMode === 'visual' ? 'bg-gradient-to-r from-emerald-500/10 to-teal-500/5 border-emerald-500/30 text-emerald-400 font-black shadow-inner' : 'bg-slate-950/20 border-slate-800/80 text-slate-500 hover:bg-slate-900/40'
+                }`}
+              >
+                <ImageIcon className="h-3.5 w-3.5" /> Visual KIS Search
+              </button>
+              <button
+                onClick={() => setSearchMode('qa')}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all duration-300 ${
+                  searchMode === 'qa' ? 'bg-gradient-to-r from-indigo-500/10 to-purple-500/5 border-indigo-500/30 text-indigo-400 font-black shadow-inner' : 'bg-slate-950/20 border-slate-800/80 text-slate-500 hover:bg-slate-900/40'
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5" /> Question Answering
+              </button>
+              <button
+                onClick={() => setSearchMode('trake')}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all duration-300 ${
+                  searchMode === 'trake' ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/5 border-amber-500/30 text-amber-400 font-black shadow-inner' : 'bg-slate-950/20 border-slate-800/80 text-slate-500 hover:bg-slate-900/40'
+                }`}
+              >
+                <Monitor className="h-3.5 w-3.5" /> Target Tracking
+              </button>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-800/40 pt-4">
+            <div className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-1.5">
               <Filter className="h-3.5 w-3.5 text-slate-400" /> FACETED FILTER
             </div>
             <div className="flex flex-col gap-1.5">
@@ -302,6 +354,45 @@ export default function App() {
 
         {/* KHOANG 2: TRUNG TÂM - HIỂN THỊ LƯỚI ẢNH KẾT QUẢ TÌM KIẾM */}
         <main className="flex-1 overflow-y-auto p-5 custom-scrollbar bg-[#05070e]">
+          {/* QA Answer Widget */}
+          {searchMode === 'qa' && apiAnswer && filteredResults.length > 0 && (
+            <div className="mb-5 p-4 rounded-xl border border-indigo-500/30 bg-indigo-950/20 backdrop-blur-md text-indigo-200 font-mono text-xs shadow-lg flex items-start gap-3 animate-fadeIn">
+              <span className="bg-indigo-500/20 px-2 py-0.5 rounded font-bold text-indigo-400 border border-indigo-500/30 shrink-0">QA ANSWER</span>
+              <span>{apiAnswer}</span>
+            </div>
+          )}
+
+          {/* TRAKE Trajectory Widget */}
+          {searchMode === 'trake' && trajectory && trajectory.length > 0 && filteredResults.length > 0 && (
+            <div className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-950/10 backdrop-blur-md shadow-lg animate-fadeIn">
+              <div className="text-[10px] font-mono font-black text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5 fill-current animate-pulse text-amber-400" /> TRACKED TARGET TRAJECTORY PATH
+              </div>
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                {trajectory.map((item, idx) => (
+                  <React.Fragment key={idx}>
+                    {idx > 0 && <span className="text-slate-700 font-bold text-xs shrink-0">➔</span>}
+                    <div 
+                      onClick={() => {
+                        const origIndex = results.findIndex(r => r.video_id === item.video_id && r.frame_id === item.frame_id);
+                        if (origIndex !== -1) handleSelectCandidate(item, origIndex);
+                      }}
+                      className="w-36 bg-slate-950 border border-amber-500/20 rounded-xl overflow-hidden shrink-0 cursor-pointer hover:border-amber-400 transition-colors"
+                    >
+                      <div className="relative aspect-video">
+                        <img src={`${API_BASE}${item.thumb_url}`} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        <span className="absolute bottom-1 right-1 bg-slate-950/90 text-[8px] font-mono px-1 rounded text-amber-400">{item.timestamp}s</span>
+                      </div>
+                      <div className="p-2 text-center text-[9px] font-mono text-slate-400 border-t border-slate-900 truncate" title={item.video_id}>
+                        {item.frame_id}
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
           {filteredResults.length === 0 ? (
             <div className="h-full w-full flex flex-col items-center justify-center text-slate-600 gap-2 border border-slate-800/30 bg-slate-900/10 rounded-2xl p-6">
               <ImageIcon className="h-7 w-7 text-slate-700 stroke-[1.5]" />
@@ -389,7 +480,7 @@ export default function App() {
                             nb.is_current ? 'border-amber-500 ring-2 ring-amber-500/30 transform scale-[0.98]' : 'border-slate-800 hover:border-slate-700'
                           }`}
                         >
-                          <img src={`${API_BASE}${nb.thumb_url}`} alt="" className="h-12 w-full object-cover" />
+                          <img src={`${API_BASE}${nb.thumb_url}`} alt="" loading="lazy" className="h-12 w-full object-cover" />
                           <div className="p-1 text-[9px] font-mono text-center font-bold text-slate-400 bg-slate-950 border-t border-slate-900/60">
                             {nb.frame_id}s
                           </div>
